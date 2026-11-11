@@ -1,0 +1,9 @@
+<app-user-layout [userEmail]="authStore.userEmail()" (logoutClick)="logout()">
+  <app-page-header title="Panel de Administración" subtitle="Gestione las solicitudes de préstamos"></app-page-header>
+
+  <div class="text-center py-16 px-6 bg-white rounded-card border border-gray-100">
+    <mat-icon class="!text-[56px] !w-14 !h-14 text-gray-300 mb-4">admin_panel_settings</mat-icon>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Gestión de Solicitudes</h3>
+    <p class="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">El módulo de gestión de solicitudes se implementará en RF-02.</p>
+  </div>
+</app-user-layout>

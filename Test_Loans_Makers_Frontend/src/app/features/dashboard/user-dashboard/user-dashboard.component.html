@@ -1,0 +1,73 @@
+<app-user-layout [userEmail]="authStore.userEmail()" (logoutClick)="logout()">
+  <app-page-header title="Mis Préstamos" subtitle="Consulte y gestione sus solicitudes">
+    <button mat-stroked-button (click)="loadLoans()" [disabled]="loanStore.loading()" class="inline-flex items-center gap-2 max-md:w-full max-md:justify-center" aria-label="Actualizar lista">
+      <mat-icon>refresh</mat-icon>
+      Actualizar
+    </button>
+    <button mat-flat-button color="primary" (click)="navigateToCreateLoan()" class="inline-flex items-center gap-2 max-md:w-full max-md:justify-center" aria-label="Crear nueva solicitud de préstamo">
+      <mat-icon>add</mat-icon>
+      Nueva Solicitud
+    </button>
+  </app-page-header>
+
+  <app-kpi-grid [items]="kpiItems()" (kpiClick)="setFilter($any($event))"></app-kpi-grid>
+
+  <nav class="flex items-center gap-3 mb-6 max-md:flex-wrap" aria-label="Filtros de estado">
+    <span class="text-[13px] font-semibold text-gray-500 uppercase tracking-wide" id="filter-label">Filtrar:</span>
+    <mat-chip-set aria-labelledby="filter-label">
+      <mat-chip [highlighted]="statusFilter() === 'ALL'" (click)="setFilter('ALL')">Todos</mat-chip>
+      <mat-chip [highlighted]="statusFilter() === 'PENDING'" (click)="setFilter('PENDING')">Pendientes</mat-chip>
+      <mat-chip [highlighted]="statusFilter() === 'APPROVED'" (click)="setFilter('APPROVED')">Aprobados</mat-chip>
+      <mat-chip [highlighted]="statusFilter() === 'REJECTED'" (click)="setFilter('REJECTED')">Rechazados</mat-chip>
+    </mat-chip-set>
+  </nav>
+
+  @if (loanStore.error()) {
+    <div class="mb-5">
+      <app-error-banner [message]="loanStore.error()!"></app-error-banner>
+    </div>
+  }
+
+  @if (loanStore.loading()) {
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 max-md:grid-cols-1" aria-busy="true" aria-label="Cargando solicitudes">
+      @for (item of skeletonItems; track $index) {
+        <div class="bg-white rounded-card border border-gray-100 p-6 space-y-3" role="presentation">
+          <app-skeleton-loader width="short" height="sm"></app-skeleton-loader>
+          <app-skeleton-loader width="wide" height="lg"></app-skeleton-loader>
+          <app-skeleton-loader width="medium" height="sm"></app-skeleton-loader>
+        </div>
+      }
+    </div>
+  } @else if (!loanStore.hasLoans()) {
+    <app-empty-state icon="inbox" title="Sin solicitudes" description="No tiene solicitudes de préstamo registradas. Cree una nueva solicitud para comenzar.">
+      <button mat-flat-button color="primary" (click)="navigateToCreateLoan()" class="inline-flex items-center gap-2">
+        <mat-icon>add</mat-icon>
+        Solicitar Préstamo
+      </button>
+    </app-empty-state>
+  } @else {
+    <section class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 max-md:grid-cols-1" aria-label="Lista de préstamos">
+      @for (loan of loanStore.loans(); track loan.id) {
+        <app-loan-card
+          [status]="loan.status"
+          [amount]="loan.amount"
+          [termMonths]="loan.termMonths"
+          [date]="loan.createdAt"
+          [rejectionReason]="loan.rejectionReason"
+          [reviewedAt]="loan.reviewedAt"
+          (cardClick)="viewDetail(loan.id)">
+        </app-loan-card>
+      }
+    </section>
+
+    @if (loanStore.totalPages() > 1) {
+      <app-pagination
+        [currentPage]="loanStore.page()"
+        [totalPages]="loanStore.totalPages()"
+        [hasPrevious]="loanStore.hasPreviousPage()"
+        [hasNext]="loanStore.hasNextPage()"
+        (pageChange)="goToPage($event)">
+      </app-pagination>
+    }
+  }
+</app-user-layout>
