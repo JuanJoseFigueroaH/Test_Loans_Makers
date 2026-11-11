@@ -1,0 +1,9 @@
+:host .mat-mdc-form-field {
+  .mat-mdc-form-field-subscript-wrapper {
+    min-height: 0;
+  }
+
+  .mat-mdc-form-field-bottom-align::before {
+    height: 0;
+  }
+}

@@ -1,0 +1,201 @@
+<app-user-layout [userEmail]="authStore.userEmail()" (logoutClick)="logout()">
+  @if (activeView() === 'detail' && store.selectedLoan(); as loan) {
+    <div class="mb-5">
+      <button mat-stroked-button (click)="backToList()" class="inline-flex items-center gap-2">
+        <mat-icon>arrow_back</mat-icon>
+        Volver al Listado
+      </button>
+    </div>
+
+    <div class="max-w-[700px]">
+      <mat-card class="!rounded-card !border !border-gray-100 !shadow-soft">
+        <mat-card-content>
+          <div class="mb-4">
+            <app-status-badge [status]="loan.status" size="lg"></app-status-badge>
+          </div>
+          <div class="text-[34px] font-bold text-gray-900 mb-5 tracking-tight max-[360px]:text-[26px]">{{ loan.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+          <mat-divider></mat-divider>
+          <div class="grid grid-cols-2 gap-5 py-5 max-md:grid-cols-1">
+            <app-info-item label="ID Solicitud" [value]="loan.id" [mono]="true"></app-info-item>
+            <app-info-item label="Plazo" [value]="loan.termMonths + ' meses'"></app-info-item>
+            <app-info-item label="Fecha de Solicitud" [value]="(loan.createdAt | date:'dd/MM/yyyy HH:mm:ss') ?? ''"></app-info-item>
+            @if (loan.reviewedAt) {
+              <app-info-item label="Fecha de Revisión" [value]="(loan.reviewedAt | date:'dd/MM/yyyy HH:mm:ss') ?? ''"></app-info-item>
+            }
+            @if (loan.reviewedBy) {
+              <app-info-item label="Revisado por" [value]="loan.reviewedBy" [mono]="true"></app-info-item>
+            }
+          </div>
+          @if (loan.rejectionReason) {
+            <div class="mt-4 p-4 bg-red-50 border border-red-100 rounded-card">
+              <div class="flex items-center gap-2 font-semibold text-sm text-red-700 mb-2">
+                <mat-icon class="!text-lg !w-[18px] !h-[18px]">info</mat-icon> Motivo del Rechazo
+              </div>
+              <p class="text-red-700 text-sm leading-relaxed opacity-85 m-0">{{ loan.rejectionReason }}</p>
+            </div>
+          }
+          @if (loan.status === 'PENDING') {
+            <div class="flex gap-3 mt-6 pt-5 border-t border-gray-200 justify-end max-[360px]:flex-col max-[360px]:[&>button]:w-full max-[360px]:[&>button]:justify-center">
+              @if (store.actionLoading() === loan.id) {
+                <mat-spinner diameter="28" class="mx-auto"></mat-spinner>
+              } @else {
+                <button mat-flat-button color="primary" (click)="approveLoan(loan)" [disabled]="store.isActionInProgress()" class="inline-flex items-center gap-2">
+                  <mat-icon>check</mat-icon> Aprobar
+                </button>
+                <button mat-stroked-button color="warn" (click)="openRejectDialog(loan)" [disabled]="store.isActionInProgress()" class="inline-flex items-center gap-2">
+                  <mat-icon>close</mat-icon> Rechazar
+                </button>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  } @else {
+    <app-page-header title="Panel Administrativo" subtitle="Gestione las solicitudes de préstamos">
+      <button mat-stroked-button (click)="loadLoans(); loadSummary()" [disabled]="store.loading()" class="inline-flex items-center gap-2 max-md:w-full max-md:justify-center">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </app-page-header>
+
+    <section class="grid grid-cols-4 gap-4 mb-6 max-lg:grid-cols-2 max-md:grid-cols-2 max-[360px]:gap-2" aria-label="Resumen de solicitudes">
+      <button class="bg-white rounded-card border border-gray-100 shadow-xs p-5 flex items-center gap-4 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-card hover:border-gray-200 max-[360px]:p-3 max-[360px]:gap-3" (click)="setFilter('ALL')" [attr.aria-pressed]="statusFilter() === 'ALL'">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-600">
+          <mat-icon class="!text-white !text-[22px] !w-[22px] !h-[22px]">list_alt</mat-icon>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[22px] font-bold text-gray-900 leading-none max-[360px]:text-lg">{{ store.summary().total }}</span>
+          <span class="text-xs text-gray-500 font-medium uppercase tracking-wide">Total</span>
+        </div>
+      </button>
+      <button class="bg-white rounded-card border border-gray-100 shadow-xs p-5 flex items-center gap-4 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-card hover:border-gray-200 max-[360px]:p-3 max-[360px]:gap-3" (click)="setFilter('PENDING')" [attr.aria-pressed]="statusFilter() === 'PENDING'">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 bg-amber-500">
+          <mat-icon class="!text-white !text-[22px] !w-[22px] !h-[22px]">hourglass_empty</mat-icon>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[22px] font-bold text-gray-900 leading-none max-[360px]:text-lg">{{ store.summary().pending }}</span>
+          <span class="text-xs text-gray-500 font-medium uppercase tracking-wide">Pendientes</span>
+        </div>
+      </button>
+      <button class="bg-white rounded-card border border-gray-100 shadow-xs p-5 flex items-center gap-4 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-card hover:border-gray-200 max-[360px]:p-3 max-[360px]:gap-3" (click)="setFilter('APPROVED')" [attr.aria-pressed]="statusFilter() === 'APPROVED'">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 bg-emerald-500">
+          <mat-icon class="!text-white !text-[22px] !w-[22px] !h-[22px]">check_circle</mat-icon>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[22px] font-bold text-gray-900 leading-none max-[360px]:text-lg">{{ store.summary().approved }}</span>
+          <span class="text-xs text-gray-500 font-medium uppercase tracking-wide">Aprobados</span>
+        </div>
+      </button>
+      <button class="bg-white rounded-card border border-gray-100 shadow-xs p-5 flex items-center gap-4 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-card hover:border-gray-200 max-[360px]:p-3 max-[360px]:gap-3" (click)="setFilter('REJECTED')" [attr.aria-pressed]="statusFilter() === 'REJECTED'">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 bg-red-500">
+          <mat-icon class="!text-white !text-[22px] !w-[22px] !h-[22px]">cancel</mat-icon>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[22px] font-bold text-gray-900 leading-none max-[360px]:text-lg">{{ store.summary().rejected }}</span>
+          <span class="text-xs text-gray-500 font-medium uppercase tracking-wide">Rechazados</span>
+        </div>
+      </button>
+    </section>
+
+    <nav class="flex items-center gap-3 mb-6 max-md:flex-wrap" aria-label="Filtros de estado">
+      <span class="text-[13px] font-semibold text-gray-500 uppercase tracking-wide">Filtrar:</span>
+      <mat-chip-set>
+        <mat-chip [highlighted]="statusFilter() === 'ALL'" (click)="setFilter('ALL')">Todos</mat-chip>
+        <mat-chip [highlighted]="statusFilter() === 'PENDING'" (click)="setFilter('PENDING')">Pendientes</mat-chip>
+        <mat-chip [highlighted]="statusFilter() === 'APPROVED'" (click)="setFilter('APPROVED')">Aprobados</mat-chip>
+        <mat-chip [highlighted]="statusFilter() === 'REJECTED'" (click)="setFilter('REJECTED')">Rechazados</mat-chip>
+      </mat-chip-set>
+    </nav>
+
+    <div class="mb-5">
+      <mat-form-field appearance="outline" class="w-full max-w-[480px] max-md:max-w-full">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Buscar por ID de solicitud..." [value]="searchTerm()"
+               (input)="onSearch($any($event.target).value)">
+      </mat-form-field>
+    </div>
+
+    @if (store.error()) {
+      <div class="mb-5">
+        <app-error-banner [message]="store.error()!"></app-error-banner>
+      </div>
+    }
+
+    @if (store.loading()) {
+      <div class="bg-white rounded-card border border-gray-100 overflow-hidden">
+        @for (item of skeletonItems; track $index) {
+          <div class="flex gap-4 px-6 py-[18px] border-b border-gray-100">
+            <div class="flex-[3] h-3.5 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer"></div>
+            <div class="flex-1 h-3.5 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer"></div>
+            <div class="flex-[2] h-3.5 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer"></div>
+            <div class="flex-1 h-3.5 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer"></div>
+          </div>
+        }
+      </div>
+    } @else if (store.loans().length === 0) {
+      <app-empty-state icon="inbox" title="Sin solicitudes" description="No hay solicitudes que coincidan con los criterios de búsqueda."></app-empty-state>
+    } @else {
+      <div class="bg-white rounded-card border border-gray-100 overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr>
+              <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-gray-50 whitespace-nowrap">Monto</th>
+              <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-gray-50 whitespace-nowrap">Plazo</th>
+              <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-gray-50 whitespace-nowrap">Estado</th>
+              <th scope="col" aria-sort="descending" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-gray-50 whitespace-nowrap">Fecha</th>
+              <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-gray-50 whitespace-nowrap">ID</th>
+              <th scope="col" class="px-4 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-gray-50 whitespace-nowrap w-[120px]">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (loan of store.loans(); track loan.id) {
+              <tr class="cursor-pointer transition-colors hover:bg-gray-50 last:[&>td]:border-b-0"
+                  [class.opacity-50]="store.actionLoading() === loan.id" [class.pointer-events-none]="store.actionLoading() === loan.id"
+                  (click)="viewDetail(loan)">
+                <td class="px-4 py-3 text-sm text-gray-900 border-b border-gray-100 whitespace-nowrap font-semibold tabular-nums">{{ loan.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="px-4 py-3 text-sm text-gray-900 border-b border-gray-100 whitespace-nowrap">{{ loan.termMonths }} meses</td>
+                <td class="px-4 py-3 text-sm text-gray-900 border-b border-gray-100 whitespace-nowrap">
+                  <app-status-badge [status]="loan.status"></app-status-badge>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-900 border-b border-gray-100 whitespace-nowrap">{{ loan.createdAt | date:'dd/MM/yyyy' }}</td>
+                <td class="px-4 py-3 border-b border-gray-100 whitespace-nowrap font-mono text-[11px] text-gray-400">{{ loan.id | slice:0:8 }}...</td>
+                <td class="px-4 py-3 border-b border-gray-100 whitespace-nowrap text-center w-[120px]" (click)="$event.stopPropagation()">
+                  @if (loan.status === 'PENDING') {
+                    @if (store.actionLoading() === loan.id) {
+                      <mat-spinner diameter="20"></mat-spinner>
+                    } @else {
+                      <button mat-icon-button color="primary" matTooltip="Aprobar"
+                              (click)="approveLoan(loan)" [disabled]="store.isActionInProgress()">
+                        <mat-icon>check_circle</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="Rechazar"
+                              (click)="openRejectDialog(loan)" [disabled]="store.isActionInProgress()">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    }
+                  } @else {
+                    <button mat-icon-button matTooltip="Ver detalle" (click)="viewDetail(loan)">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (store.totalPages() > 1) {
+        <app-pagination
+          [currentPage]="store.page()"
+          [totalPages]="store.totalPages()"
+          [totalElements]="store.totalElements()"
+          [hasPrevious]="store.hasPreviousPage()"
+          [hasNext]="store.hasNextPage()"
+          (pageChange)="goToPage($event)">
+        </app-pagination>
+      }
+    }
+  }
+</app-user-layout>

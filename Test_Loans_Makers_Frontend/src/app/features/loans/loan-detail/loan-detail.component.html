@@ -1,0 +1,145 @@
+<div class="min-h-screen bg-gray-50 p-8 max-md:p-5 max-[360px]:p-4">
+  @if (store.detailLoading()) {
+    <div class="text-center py-[120px] flex flex-col items-center gap-4">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p class="text-gray-500 text-sm">Cargando solicitud...</p>
+    </div>
+  }
+
+  @if (store.error() && !store.detailLoading()) {
+    <div class="text-center py-[120px] px-6 flex flex-col items-center gap-6">
+      <app-error-banner [message]="store.error()!"></app-error-banner>
+      <button mat-flat-button color="primary" (click)="goBack()" class="inline-flex items-center gap-2">
+        <mat-icon>arrow_back</mat-icon>
+        Volver al Panel
+      </button>
+    </div>
+  }
+
+  @if (store.selectedLoan(); as loan) {
+    <div class="max-w-[900px] mx-auto">
+      <div class="flex items-center gap-3 mb-6">
+        <button mat-icon-button (click)="goBack()" aria-label="Volver">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h2 class="text-[22px] font-bold text-gray-900 tracking-tight max-md:text-xl">Detalle de Solicitud</h2>
+      </div>
+
+      <div class="grid grid-cols-[1fr_340px] gap-6 mb-8 max-md:grid-cols-1">
+        <mat-card class="!rounded-card !border !border-gray-100 !shadow-soft">
+          <mat-card-content>
+            <div class="mb-4">
+              <app-status-badge [status]="loan.status" size="lg"></app-status-badge>
+            </div>
+
+            <div class="text-[34px] font-bold text-gray-900 mb-5 tracking-tight max-md:text-[28px] max-[360px]:text-2xl">
+              {{ loan.amount | currency:'COP':'symbol-narrow':'1.0-0' }}
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="grid grid-cols-2 gap-5 py-5 max-md:grid-cols-1">
+              <app-info-item label="Plazo" [value]="loan.termMonths + ' meses'"></app-info-item>
+              <app-info-item label="ID Solicitud" [value]="loan.id" [mono]="true"></app-info-item>
+              <app-info-item label="Fecha de Creación" [value]="(loan.createdAt | date:'dd/MM/yyyy HH:mm:ss') ?? ''"></app-info-item>
+              @if (loan.reviewedAt) {
+                <app-info-item label="Fecha de Revisión" [value]="(loan.reviewedAt | date:'dd/MM/yyyy HH:mm:ss') ?? ''"></app-info-item>
+              }
+            </div>
+
+            @if (loan.rejectionReason) {
+              <div class="mt-4 p-4 bg-red-50 border border-red-100 rounded-card">
+                <div class="flex items-center gap-2 font-semibold text-sm text-red-700 mb-2">
+                  <mat-icon class="!text-lg !w-[18px] !h-[18px]">info</mat-icon>
+                  Motivo del Rechazo
+                </div>
+                <p class="text-red-700 text-sm leading-relaxed opacity-85 m-0">{{ loan.rejectionReason }}</p>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="!rounded-card !border !border-gray-100 !shadow-soft">
+          <mat-card-content>
+            <h3 class="text-[15px] font-bold text-gray-900 mb-6 tracking-tight">Historial de Estado</h3>
+
+            <div class="relative pl-8 before:content-[''] before:absolute before:left-[11px] before:top-1 before:bottom-1 before:w-0.5 before:bg-gray-200">
+              <div class="relative pb-6 last:pb-0">
+                <div class="absolute -left-8 top-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center z-[1]">
+                  <mat-icon class="!text-[13px] !w-[13px] !h-[13px] text-white">edit_note</mat-icon>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-sm font-semibold text-gray-900">Solicitud Creada</span>
+                  <span class="text-xs text-gray-500 font-medium">{{ loan.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  <span class="text-[13px] text-gray-500 leading-normal">Solicitud registrada por {{ loan.amount | currency:'COP':'symbol-narrow':'1.0-0' }} a {{ loan.termMonths }} meses</span>
+                </div>
+              </div>
+
+              <div class="relative pb-6 last:pb-0">
+                <div class="absolute -left-8 top-0 w-6 h-6 rounded-full flex items-center justify-center z-[1] transition-all"
+                     [ngClass]="loan.status === 'PENDING' ? 'bg-amber-500 animate-pulse' : 'bg-blue-600'">
+                  <mat-icon class="!text-[13px] !w-[13px] !h-[13px] text-white">hourglass_empty</mat-icon>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-sm font-semibold text-gray-900">En Revisión</span>
+                  @if (loan.status === 'PENDING') {
+                    <span class="text-[13px] text-amber-600 italic leading-normal">Pendiente de evaluación por un administrador</span>
+                  } @else {
+                    <span class="text-xs text-gray-500 font-medium">Revisión completada</span>
+                  }
+                </div>
+              </div>
+
+              @if (loan.status === 'APPROVED') {
+                <div class="relative pb-0">
+                  <div class="absolute -left-8 top-0 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center z-[1]">
+                    <mat-icon class="!text-[13px] !w-[13px] !h-[13px] text-white">check_circle</mat-icon>
+                  </div>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-semibold text-gray-900">Aprobado</span>
+                    <span class="text-xs text-gray-500 font-medium">{{ loan.reviewedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                    <span class="text-[13px] text-gray-500 leading-normal">Su solicitud ha sido aprobada</span>
+                  </div>
+                </div>
+              }
+
+              @if (loan.status === 'REJECTED') {
+                <div class="relative pb-0">
+                  <div class="absolute -left-8 top-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center z-[1]">
+                    <mat-icon class="!text-[13px] !w-[13px] !h-[13px] text-white">cancel</mat-icon>
+                  </div>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-semibold text-gray-900">Rechazado</span>
+                    <span class="text-xs text-gray-500 font-medium">{{ loan.reviewedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                    @if (loan.rejectionReason) {
+                      <span class="text-[13px] text-gray-500 leading-normal">{{ loan.rejectionReason }}</span>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (loan.status === 'PENDING') {
+                <div class="relative pb-0">
+                  <div class="absolute -left-8 top-0 w-6 h-6 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center z-[1]">
+                    <mat-icon class="!text-[13px] !w-[13px] !h-[13px] text-gray-400">help_outline</mat-icon>
+                  </div>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-semibold text-gray-900">Decisión Pendiente</span>
+                    <span class="text-[13px] text-gray-500 leading-normal">Aprobación o rechazo</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div>
+        <button mat-stroked-button (click)="goBack()" class="inline-flex items-center gap-2">
+          <mat-icon>arrow_back</mat-icon>
+          Volver al Panel
+        </button>
+      </div>
+    </div>
+  }
+</div>
