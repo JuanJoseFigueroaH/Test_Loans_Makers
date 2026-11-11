@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ═══════════════════════════════════════════
+//  BASE LAYER
+// ═══════════════════════════════════════════
+
+@layer base {
+  html, body {
+    @apply h-full font-sans text-sm leading-normal text-gray-900 bg-gray-50 antialiased;
+  }
+
+  .skip-to-content {
+    @apply absolute -top-full left-4 z-[9999] bg-blue-600 text-white px-4 py-2 rounded-b-lg font-semibold text-sm;
+    &:focus {
+      @apply top-0;
+    }
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-blue-600 outline-offset-2 rounded-md;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+// ═══════════════════════════════════════════
+//  ANGULAR MATERIAL OVERRIDES (must stay SCSS)
+// ═══════════════════════════════════════════
+
+.mat-mdc-snack-bar-container {
+  &.snackbar-success .mdc-snackbar__surface { background-color: theme('colors.emerald.600') !important; }
+  &.snackbar-error .mdc-snackbar__surface   { background-color: theme('colors.red.600') !important; }
+  &.snackbar-warning .mdc-snackbar__surface { background-color: theme('colors.amber.600') !important; }
+  &.snackbar-info .mdc-snackbar__surface    { background-color: theme('colors.blue.600') !important; }
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: theme('colors.gray.200');
+  --mdc-outlined-text-field-hover-outline-color: theme('colors.gray.400');
+  --mdc-outlined-text-field-focus-outline-color: theme('colors.blue.600');
+  --mdc-outlined-text-field-label-text-color: theme('colors.gray.500');
+  --mdc-outlined-text-field-input-text-color: theme('colors.gray.900');
+  --mat-form-field-container-text-size: 14px;
+
+  .mdc-notched-outline__notch {
+    border-right: none !important;
+    border-left: none !important;
+  }
+}
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary {
+  --mdc-filled-button-container-color: theme('colors.blue.600');
+  --mdc-filled-button-label-text-color: #fff;
+  @apply rounded-lg font-semibold tracking-tight;
+}
+
+.mat-mdc-outlined-button {
+  @apply rounded-lg font-medium;
+}
+
+.mat-mdc-icon-button {
+  --mdc-icon-button-state-layer-size: 40px;
+}
+
+.mat-mdc-card {
+  --mdc-elevated-card-container-shape: theme('borderRadius.card');
+  --mdc-elevated-card-container-elevation: theme('boxShadow.soft');
+  @apply border border-gray-100;
+}
+
+.mat-mdc-chip.mat-mdc-chip-highlighted {
+  --mdc-chip-elevated-container-color: theme('colors.blue.600');
+  --mdc-chip-label-text-color: #fff;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 1rem !important;
+}

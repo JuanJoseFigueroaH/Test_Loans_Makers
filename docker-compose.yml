@@ -1,0 +1,107 @@
+services:
+  # ── PostgreSQL ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: bankloan-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-loans_db}
+      POSTGRES_USER: ${DB_USERNAME:-bankloan}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bankloan_secret}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - bankloan-network
+    restart: unless-stopped
+
+  # ── Redis ──
+  redis:
+    image: redis:7.2-alpine
+    container_name: bankloan-redis
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - bankloan-network
+    restart: unless-stopped
+
+  # ── Backend (Spring Boot) ──
+  backend:
+    build:
+      context: ./Test_Loans_Makers_Backend
+      dockerfile: Dockerfile
+    container_name: bankloan-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-loans_db}
+      DB_USERNAME: ${DB_USERNAME:-bankloan}
+      DB_PASSWORD: ${DB_PASSWORD:-bankloan_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-c2VjcmV0S2V5Rm9yRGV2ZWxvcG1lbnRPbmx5RG9Ob3RVc2VJblByb2R1Y3Rpb24xMjM0NTY3ODk=}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-3600000}
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - bankloan-network
+    restart: unless-stopped
+
+  # ── Frontend (Angular + Nginx) ──
+  frontend:
+    build:
+      context: ./Test_Loans_Makers_Frontend
+      dockerfile: Dockerfile
+    container_name: bankloan-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - bankloan-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  bankloan-network:
+    driver: bridge

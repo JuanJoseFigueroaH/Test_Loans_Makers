@@ -1,0 +1,27 @@
+# Environment variables (contains secrets)
+.env
+!.env.example
+
+# Backend
+Test_Loans_Makers_Backend/target/
+Test_Loans_Makers_Backend/.mvn/wrapper/maven-wrapper.jar
+Test_Loans_Makers_Backend/*.iml
+Test_Loans_Makers_Backend/.idea/
+
+# Frontend
+Test_Loans_Makers_Frontend/node_modules/
+Test_Loans_Makers_Frontend/dist/
+Test_Loans_Makers_Frontend/.angular/
+Test_Loans_Makers_Frontend/.vscode/
+Test_Loans_Makers_Frontend/coverage/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

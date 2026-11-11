@@ -1,0 +1,11 @@
+spring:
+  jpa:
+    show-sql: true
+
+app:
+  seeder:
+    enabled: true
+
+logging:
+  level:
+    com.bankloan: DEBUG

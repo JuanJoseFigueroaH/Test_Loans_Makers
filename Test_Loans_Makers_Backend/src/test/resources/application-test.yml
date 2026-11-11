@@ -1,0 +1,25 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  flyway:
+    enabled: true
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+      - org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration
+
+app:
+  jwt:
+    secret: c2VjcmV0S2V5Rm9yRGV2ZWxvcG1lbnRPbmx5RG9Ob3RVc2VJblByb2R1Y3Rpb24xMjM0NTY3ODk=
+    expiration-ms: 3600000
+  seeder:
+    enabled: true
+
+logging:
+  level:
+    com.bankloan: DEBUG

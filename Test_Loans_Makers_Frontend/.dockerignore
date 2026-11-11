@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.angular/
+
+# IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Docs
+README.md
+*.md
+
+# Tests
+coverage/
+e2e/
+
+# CI
+.github/
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,23 @@
+# Build output
+target/
+
+# IDE
+.git/
+.gitignore
+.idea/
+*.iml
+.vscode/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Docs
+README.md
+*.md
+
+# CI
+.github/
+
+# Logs
+*.log
