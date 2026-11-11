@@ -1,0 +1,12 @@
+<div class="min-h-screen bg-gray-50" role="main">
+  <app-header
+    [userEmail]="userEmail"
+    (logoutClick)="logoutClick.emit()">
+  </app-header>
+
+  <main id="main-content" tabindex="-1" class="p-8 max-md:p-5 max-[360px]:p-4 outline-none">
+    <div class="max-w-[1200px] mx-auto">
+      <ng-content></ng-content>
+    </div>
+  </main>
+</div>

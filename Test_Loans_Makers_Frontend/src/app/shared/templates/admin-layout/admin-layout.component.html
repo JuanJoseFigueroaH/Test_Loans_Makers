@@ -1,0 +1,43 @@
+<div class="flex min-h-screen bg-gray-50">
+  <aside class="fixed top-0 left-0 bottom-0 z-[100] flex flex-col bg-gradient-to-b from-navy-900 to-navy-800 text-white transition-all duration-300 max-md:hidden"
+         [class.w-[248px]]="sidebarOpen" [class.w-[68px]]="!sidebarOpen">
+    <div class="flex items-center min-h-[64px] p-4" [class.justify-between]="sidebarOpen" [class.justify-center]="!sidebarOpen">
+      <span *ngIf="sidebarOpen" class="text-xl font-bold tracking-[2px] text-white flex items-center gap-2 before:content-['account_balance'] before:font-['Material_Icons'] before:text-[22px] before:text-blue-400">makers</span>
+      <button mat-icon-button (click)="toggleClick.emit()" class="!text-white/60 hover:!text-white">
+        <mat-icon>{{ sidebarOpen ? 'menu_open' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+    <mat-divider></mat-divider>
+    <nav class="flex flex-col p-2 flex-1">
+      <ng-content select="[sidebar-nav]"></ng-content>
+    </nav>
+    <div class="p-2" *ngIf="sidebarOpen">
+      <mat-divider></mat-divider>
+      <ng-content select="[sidebar-footer]"></ng-content>
+    </div>
+  </aside>
+
+  <div class="flex-1 min-w-0 transition-all duration-300 max-md:!ml-0"
+       [class.ml-[248px]]="sidebarOpen" [class.ml-[68px]]="!sidebarOpen">
+    <header class="bg-white border-b border-gray-200 px-6 h-16 flex items-center justify-between sticky top-0 z-50 max-md:px-4">
+      <div class="flex items-center gap-3">
+        <button mat-icon-button (click)="toggleClick.emit()" class="hidden max-md:block">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <h1 class="text-lg font-bold text-gray-900 tracking-tight">{{ pageTitle }}</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        @if (userEmail) {
+          <span class="text-[13px] text-gray-500 font-medium max-md:hidden">{{ userEmail }}</span>
+        }
+        <button mat-icon-button matTooltip="Cerrar Sesión" (click)="logoutClick.emit()">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content" tabindex="-1" class="p-6 max-md:p-4 max-[360px]:p-3 outline-none">
+      <ng-content></ng-content>
+    </main>
+  </div>
+</div>

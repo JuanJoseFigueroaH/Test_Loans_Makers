@@ -1,0 +1,25 @@
+<header class="bg-white border-b border-gray-200 px-6 h-16 flex items-center sticky top-0 z-50 max-md:px-4" role="banner">
+  <div class="w-full max-w-[1200px] mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      @if (showMenuButton) {
+        <button mat-icon-button (click)="menuClick.emit()" class="hidden max-md:block" aria-label="Abrir menú">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
+      <span class="text-[22px] font-bold tracking-[2px] text-navy-900 flex items-center gap-2 before:content-['account_balance'] before:font-['Material_Icons'] before:text-2xl before:text-blue-600"
+            aria-label="Makers - Sistema de Préstamos">makers</span>
+      @if (pageTitle) {
+        <span class="text-lg font-bold text-gray-900 tracking-tight max-md:hidden">{{ pageTitle }}</span>
+      }
+    </div>
+    <div class="flex items-center gap-4">
+      @if (userEmail) {
+        <span class="text-sm text-gray-500 font-medium max-md:hidden">{{ userEmail }}</span>
+      }
+      <ng-content></ng-content>
+      <button mat-icon-button matTooltip="Cerrar Sesión" (click)="logoutClick.emit()" aria-label="Cerrar sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </div>
+</header>

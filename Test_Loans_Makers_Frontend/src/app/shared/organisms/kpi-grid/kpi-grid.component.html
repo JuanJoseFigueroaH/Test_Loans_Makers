@@ -1,0 +1,12 @@
+<section class="grid grid-cols-4 gap-4 mb-6 max-lg:grid-cols-2 max-md:grid-cols-2 max-[360px]:gap-2" aria-label="Resumen de solicitudes">
+  @for (kpi of items; track kpi.label) {
+    <app-kpi-card
+      [icon]="kpi.icon"
+      [value]="kpi.value"
+      [label]="kpi.label"
+      [color]="kpi.color"
+      [active]="kpi.active ?? false"
+      (cardClick)="kpiClick.emit(kpi.filterKey)">
+    </app-kpi-card>
+  }
+</section>

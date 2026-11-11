@@ -1,0 +1,14 @@
+<nav class="flex justify-center items-center gap-4 mt-8" aria-label="Paginación">
+  <button mat-icon-button [disabled]="!hasPrevious" (click)="pageChange.emit(currentPage - 1)" aria-label="Página anterior">
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+  <span class="text-sm text-gray-500 font-medium" aria-live="polite">
+    Página {{ currentPage + 1 }} de {{ totalPages }}
+    @if (totalElements !== null) {
+      <span class="max-md:hidden">({{ totalElements }} registros)</span>
+    }
+  </span>
+  <button mat-icon-button [disabled]="!hasNext" (click)="pageChange.emit(currentPage + 1)" aria-label="Página siguiente">
+    <mat-icon>chevron_right</mat-icon>
+  </button>
+</nav>
