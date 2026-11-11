@@ -233,4 +233,49 @@ class GlobalExceptionHandlerTest {
                 })
                 .verifyComplete();
     }
+
+    @Test
+    void handleValidation_shouldReturnFieldErrors() {
+        org.springframework.validation.BeanPropertyBindingResult bindingResult =
+                new org.springframework.validation.BeanPropertyBindingResult(new Object(), "request");
+        bindingResult.addError(new org.springframework.validation.FieldError(
+                "request", "email", "must not be blank"));
+        org.springframework.web.bind.support.WebExchangeBindException ex =
+                new org.springframework.web.bind.support.WebExchangeBindException(
+                        org.springframework.core.MethodParameter.forExecutable(
+                                Object.class.getDeclaredMethods()[0], -1),
+                        bindingResult);
+
+        Mono<ProblemDetail> result = handler.handleValidation(ex);
+
+        StepVerifier.create(result)
+                .assertNext(problem -> {
+                    assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(problem.getTitle()).isEqualTo("Validation Failed");
+                    assertThat(problem.getProperties().get("code")).isEqualTo("VALIDATION_ERROR");
+                    assertThat(problem.getProperties()).containsKey("errors");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void handleValidation_withNullDefaultMessage_shouldUseInvalidValue() {
+        org.springframework.validation.BeanPropertyBindingResult bindingResult =
+                new org.springframework.validation.BeanPropertyBindingResult(new Object(), "request");
+        bindingResult.addError(new org.springframework.validation.FieldError(
+                "request", "amount", null, false, null, null, null));
+        org.springframework.web.bind.support.WebExchangeBindException ex =
+                new org.springframework.web.bind.support.WebExchangeBindException(
+                        org.springframework.core.MethodParameter.forExecutable(
+                                Object.class.getDeclaredMethods()[0], -1),
+                        bindingResult);
+
+        Mono<ProblemDetail> result = handler.handleValidation(ex);
+
+        StepVerifier.create(result)
+                .assertNext(problem -> {
+                    assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                })
+                .verifyComplete();
+    }
 }

@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
@@ -42,16 +42,22 @@ describe('AuthService', () => {
       req.flush(mockResponse);
     });
 
-    it('should propagate error on failed login', () => {
+    it('should propagate error on failed login', fakeAsync(() => {
+      let errorStatus: number | undefined;
       service.login({ email: 'wrong@test.com', password: 'bad' }).subscribe({
         error: (err) => {
-          expect(err.status).toBe(401);
+          errorStatus = err.status;
         },
       });
 
-      const req = httpTesting.expectOne(r => r.url.includes('/auth/login'));
-      req.flush({ title: 'Invalid Credentials' }, { status: 401, statusText: 'Unauthorized' });
-    });
+      for (let i = 0; i < 3; i++) {
+        const req = httpTesting.expectOne(r => r.url.includes('/auth/login'));
+        req.flush({ title: 'Invalid Credentials' }, { status: 401, statusText: 'Unauthorized' });
+        if (i < 2) tick(1000);
+      }
+      tick();
+      expect(errorStatus).toBe(401);
+    }));
   });
 
   describe('me', () => {

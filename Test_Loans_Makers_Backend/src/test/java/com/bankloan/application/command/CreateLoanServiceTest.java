@@ -119,6 +119,17 @@ class CreateLoanServiceTest {
     }
 
     @Test
+    void createLoan_withNullTermMonths_shouldThrowInvalidLoanException() {
+        UUID userId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> service.createLoan(userId, new BigDecimal("5000"), null))
+                .isInstanceOf(InvalidLoanException.class)
+                .hasMessageContaining("Term months must be greater than zero");
+
+        verifyNoInteractions(loanRepository);
+    }
+
+    @Test
     void createLoan_shouldSetInitialStatusToPending() {
         UUID userId = UUID.randomUUID();
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));

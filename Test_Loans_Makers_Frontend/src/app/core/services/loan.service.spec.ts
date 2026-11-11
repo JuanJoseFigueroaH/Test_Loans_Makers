@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { LoanService } from './loan.service';
@@ -184,15 +184,21 @@ describe('LoanService', () => {
       req.flush({ title: 'Concurrency Conflict' }, { status: 409, statusText: 'Conflict' });
     });
 
-    it('should propagate 404 on non-existent loan', () => {
+    it('should propagate 404 on non-existent loan', fakeAsync(() => {
+      let errorStatus: number | undefined;
       service.getLoanById('nonexistent').subscribe({
         error: (err) => {
-          expect(err.status).toBe(404);
+          errorStatus = err.status;
         },
       });
 
-      const req = httpTesting.expectOne(r => r.url.includes('/loans/nonexistent'));
-      req.flush({ title: 'Loan Not Found' }, { status: 404, statusText: 'Not Found' });
-    });
+      for (let i = 0; i < 3; i++) {
+        const req = httpTesting.expectOne(r => r.url.includes('/loans/nonexistent'));
+        req.flush({ title: 'Loan Not Found' }, { status: 404, statusText: 'Not Found' });
+        if (i < 2) tick(1000);
+      }
+      tick();
+      expect(errorStatus).toBe(404);
+    }));
   });
 });

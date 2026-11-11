@@ -112,6 +112,17 @@ class AdminLoanQueryServiceTest {
     }
 
     @Test
+    void getAllLoans_withBlankSearchId_shouldReturnPaginatedLoans() {
+        PageResult<Loan> page = PageResult.of(List.of(), 0, 10, 0, 0, true, true);
+        when(loanRepository.findAllPaginated(null, 0, 10)).thenReturn(page);
+
+        PageResult<Loan> result = service.getAllLoans(null, "   ", 0, 10);
+
+        assertThat(result.content()).isEmpty();
+        verify(loanRepository).findAllPaginated(null, 0, 10);
+    }
+
+    @Test
     void getSummary_shouldReturnCorrectCounts() {
         when(loanRepository.countAll()).thenReturn(10L);
         when(loanRepository.countByStatus(LoanStatus.PENDING)).thenReturn(4L);

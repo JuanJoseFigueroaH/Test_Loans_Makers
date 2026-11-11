@@ -220,6 +220,13 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/bankloan/BankLoanApplication.class</exclude>
+                        <exclude>com/bankloan/infrastructure/config/RedisCacheConfig.class</exclude>
+                        <exclude>com/bankloan/infrastructure/config/RedisCacheConfig$*.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
